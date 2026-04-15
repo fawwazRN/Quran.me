@@ -1,0 +1,363 @@
+import { useEffect, useState, useRef } from "react";
+import { useParams, Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { motion, useScroll, useSpring, AnimatePresence } from "framer-motion";
+import {
+  ChevronLeft,
+  Share2,
+  Heart,
+  BookOpen,
+  BookmarkCheck,
+  Play,
+  Pause,
+  Copy,
+  Volume2,
+  SkipBack,
+  SkipForward,
+  Settings2,
+  X,
+} from "lucide-react";
+import {
+  getSurahDetail,
+  toggleFavoriteAyat,
+  setLastRead,
+} from "../features/quranSlice";
+import { SkeletonAyat } from "../components/Skeleton";
+
+const Detail = () => {
+  const { nomor } = useParams();
+  const dispatch = useDispatch();
+  const { detailSurah, loading, favoriteAyats, lastRead } = useSelector(
+    (state) => state.quran,
+  );
+
+  // Audio & UX States
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentAyat, setCurrentAyat] = useState(null); // null = full surah, number = per ayat
+  const [selectedQari, setSelectedQari] = useState("05"); // Default Misyari Rasyid
+  const [showQariModal, setShowQariModal] = useState(false);
+  const audioRef = useRef(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  const qariList = [
+    { id: "01", name: "Abdullah Al-Juhany" },
+    { id: "02", name: "Abdul Muhsin Al-Qasim" },
+    { id: "03", name: "Abdurrahman as-Sudais" },
+    { id: "04", name: "Ibrahim Al-Dossari" },
+    { id: "05", name: "Misyari Rasyid Al-Afasy" },
+  ];
+
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
+
+  useEffect(() => {
+    dispatch(getSurahDetail(nomor));
+    window.scrollTo(0, 0);
+    const handleScroll = () => setIsScrolled(window.scrollY > 150);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [dispatch, nomor]);
+
+  // 1. FUNGSI SHARE
+  const handleShare = (ayat) => {
+    const text = `Q.S ${detailSurah.namaLatin}: ${ayat.nomorAyat}\n\n${ayat.teksArab}\n\nArtinya: "${ayat.teksIndonesia}"`;
+    if (navigator.share) {
+      navigator.share({ title: detailSurah.namaLatin, text });
+    } else {
+      navigator.clipboard.writeText(text);
+      alert("Teks ayat berhasil disalin ke clipboard!");
+    }
+  };
+
+  // 2. FUNGSI AUDIO (PER AYAT & FULL SURAT)
+  const togglePlay = (ayatNomor = null) => {
+    if (currentAyat === ayatNomor && isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      setCurrentAyat(ayatNomor);
+      const newSrc = ayatNomor
+        ? detailSurah.ayat.find((a) => a.nomorAyat === ayatNomor).audio[
+            selectedQari
+          ]
+        : detailSurah.audioFull[selectedQari];
+
+      audioRef.current.src = newSrc;
+      audioRef.current.play();
+      setIsPlaying(true);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentAyat && currentAyat < detailSurah.jumlahAyat) {
+      togglePlay(currentAyat + 1);
+    } else if (!currentAyat) {
+      alert("Anda sedang memutar full surat");
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentAyat && currentAyat > 1) {
+      togglePlay(currentAyat - 1);
+    }
+  };
+
+  const isFav = (ayatNomor) =>
+    favoriteAyats.some(
+      (fav) => fav.favId === `${detailSurah?.namaLatin}-${ayatNomor}`,
+    );
+
+  if (loading)
+    return (
+      <div className="bg-[#050505] p-6 min-h-screen">
+        <SkeletonAyat />
+      </div>
+    );
+
+  return (
+    <div className="bg-[#F8FAFC] dark:bg-[#050505] pb-44 min-h-screen transition-colors duration-500">
+      {/* PROGRESS BAR */}
+      <motion.div
+        className="top-0 right-0 left-0 z-210 fixed bg-emerald-500 h-1 origin-left"
+        style={{ scaleX }}
+      />
+
+      {/* NAVBAR */}
+      <nav
+        className={`fixed top-0 left-0 right-0 z-200 transition-all duration-500 ${isScrolled ? "bg-white/80 dark:bg-black/80 backdrop-blur-xl py-3 border-b dark:border-white/5" : "py-6"}`}>
+        <div className="flex justify-between items-center mx-auto px-6 max-w-5xl container">
+          <Link
+            to="/"
+            className="bg-white hover:bg-emerald-500 dark:bg-slate-900 shadow-sm p-3 border dark:border-white/5 rounded-2xl hover:text-white dark:text-white transition-all">
+            <ChevronLeft size={24} />
+          </Link>
+          <div className="text-center">
+            <h2 className="font-black dark:text-white">
+              {detailSurah?.namaLatin}
+            </h2>
+            <p className="font-bold text-[10px] text-emerald-500 uppercase tracking-widest">
+              {detailSurah?.arti}
+            </p>
+          </div>
+          <button
+            onClick={() => setShowQariModal(true)}
+            className="bg-emerald-500/10 hover:bg-emerald-500 p-3 rounded-2xl text-emerald-500 hover:text-white transition-all">
+            <Settings2 size={24} />
+          </button>
+        </div>
+      </nav>
+
+      <div className="mx-auto px-5 pt-28 max-w-4xl container">
+        {/* HEADER HERO */}
+        <header className="relative bg-emerald-600 dark:bg-emerald-900 shadow-2xl mb-16 p-12 md:p-20 rounded-[3.5rem] overflow-hidden text-white text-center">
+          <BookOpen
+            className="-bottom-10 -left-10 absolute opacity-10 rotate-12"
+            size={250}
+          />
+          <h1 className="drop-shadow-lg mb-6 font-arabic text-7xl md:text-9xl">
+            {detailSurah?.nama}
+          </h1>
+          <h2 className="font-black text-4xl">{detailSurah?.namaLatin}</h2>
+          <button
+            onClick={() => togglePlay(null)}
+            className="flex items-center gap-2 bg-white/20 hover:bg-white backdrop-blur-md mx-auto mt-8 px-8 py-3 border border-white/30 rounded-full font-bold hover:text-emerald-700 transition-all">
+            {currentAyat === null && isPlaying ? (
+              <Pause size={20} />
+            ) : (
+              <Play size={20} />
+            )}
+            Putar Full Surat
+          </button>
+        </header>
+
+        {/* AYAT LIST */}
+        <div className="space-y-6">
+          {detailSurah?.ayat.map((ayat) => (
+            <motion.div
+              key={ayat.nomorAyat}
+              onViewportEnter={() =>
+                dispatch(
+                  setLastRead({
+                    nomorSurat: nomor,
+                    namaSurat: detailSurah.namaLatin,
+                    nomorAyat: ayat.nomorAyat,
+                  }),
+                )
+              }
+              className={`p-8 md:p-12 rounded-[3rem] transition-all duration-500 ${
+                currentAyat === ayat.nomorAyat
+                  ? "bg-emerald-500/10 ring-2 ring-emerald-500"
+                  : "bg-white dark:bg-white/5"
+              } ${lastRead?.nomorAyat === ayat.nomorAyat && "ring-1 ring-emerald-500/30"}`}>
+              <div className="flex justify-between items-center mb-10">
+                <div className="flex items-center gap-3">
+                  <div className="flex justify-center items-center bg-slate-900 rounded-2xl w-12 h-12 font-black text-white">
+                    {ayat.nomorAyat}
+                  </div>
+                  {lastRead?.nomorAyat === ayat.nomorAyat && (
+                    <span className="bg-emerald-500 px-3 py-1 rounded-full font-black text-[9px] text-white uppercase tracking-tighter">
+                      Terakhir Dibaca
+                    </span>
+                  )}
+                </div>
+
+                {/* TOOLBAR AYAT */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => togglePlay(ayat.nomorAyat)}
+                    className={`p-3 rounded-xl transition-all ${currentAyat === ayat.nomorAyat && isPlaying ? "bg-emerald-500 text-white" : "bg-gray-100 dark:bg-white/5 text-slate-400"}`}>
+                    {currentAyat === ayat.nomorAyat && isPlaying ? (
+                      <Pause size={20} />
+                    ) : (
+                      <Play size={20} />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleShare(ayat)}
+                    className="bg-gray-100 dark:bg-white/5 p-3 rounded-xl text-slate-400 hover:text-emerald-500">
+                    <Share2 size={20} />
+                  </button>
+                  <button
+                    onClick={() =>
+                      dispatch(
+                        toggleFavoriteAyat({
+                          surahName: detailSurah.namaLatin,
+                          ayat,
+                        }),
+                      )
+                    }
+                    className={`p-3 rounded-xl ${isFav(ayat.nomorAyat) ? "bg-red-500 text-white" : "bg-gray-100 dark:bg-white/5 text-slate-400"}`}>
+                    <Heart
+                      size={20}
+                      fill={isFav(ayat.nomorAyat) ? "currentColor" : "none"}
+                    />
+                  </button>
+                </div>
+              </div>
+
+              <h2
+                className="mb-8 font-arabic dark:text-white text-5xl md:text-7xl text-right leading-relaxed"
+                dir="rtl">
+                {ayat.teksArab}
+              </h2>
+              <p className="mb-3 font-bold text-emerald-500 text-lg italic leading-relaxed">
+                {ayat.teksLatin}
+              </p>
+              <p className="font-medium text-slate-500 dark:text-slate-400 text-xl leading-relaxed">
+                {ayat.teksIndonesia}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* FLOATING PLAYER (PERSIS GAMBAR) */}
+      <AnimatePresence>
+        <motion.div
+          initial={{ y: 100 }}
+          animate={{ y: 0 }}
+          className="bottom-8 left-1/2 z-250 fixed w-[95%] max-w-md -translate-x-1/2">
+          <div className="flex justify-between items-center bg-white/90 dark:bg-slate-900/95 shadow-2xl backdrop-blur-2xl p-4 border dark:border-white/10 rounded-[2.5rem]">
+            <div className="flex items-center gap-3 pl-2">
+              <div
+                className={`w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg ${isPlaying && "animate-spin-slow"}`}>
+                <Volume2 size={24} />
+              </div>
+              <div className="max-w-25">
+                <h4 className="font-black text-[10px] dark:text-white truncate uppercase">
+                  {currentAyat ? `Ayat ${currentAyat}` : "Full Surat"}
+                </h4>
+                <p className="font-bold text-[9px] text-emerald-500 truncate tracking-tighter">
+                  {qariList.find((q) => q.id === selectedQari).name}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handlePrev}
+                className="p-2 text-slate-400 hover:text-emerald-500 transition-all">
+                <SkipBack size={22} />
+              </button>
+              <button
+                onClick={() => togglePlay(currentAyat)}
+                className="flex justify-center items-center bg-emerald-500 shadow-emerald-500/40 shadow-lg rounded-full w-14 h-14 text-white hover:scale-105 active:scale-95 transition-all">
+                {isPlaying ? (
+                  <Pause size={30} fill="currentColor" />
+                ) : (
+                  <Play size={30} fill="currentColor" className="ml-1" />
+                )}
+              </button>
+              <button
+                onClick={handleNext}
+                className="p-2 text-slate-400 hover:text-emerald-500 transition-all">
+                <SkipForward size={22} />
+              </button>
+            </div>
+
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="bg-gray-100 dark:bg-white/5 mr-2 p-3 rounded-2xl text-slate-400 hover:text-emerald-500">
+              <BookmarkCheck size={20} />
+            </button>
+          </div>
+          <audio
+            ref={audioRef}
+            onEnded={() => {
+              setIsPlaying(false);
+              handleNext();
+            }}
+          />
+        </motion.div>
+      </AnimatePresence>
+
+      {/* MODAL SETTINGS QARI */}
+      <AnimatePresence>
+        {showQariModal && (
+          <div className="z-300 fixed inset-0 flex justify-center items-center p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowQariModal(false)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="relative bg-white dark:bg-slate-900 shadow-2xl p-8 border dark:border-white/10 rounded-[3rem] w-full max-w-sm">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="font-black dark:text-white text-xl">
+                  Pilih Qari
+                </h3>
+                <button
+                  onClick={() => setShowQariModal(false)}
+                  className="text-slate-400">
+                  <X />
+                </button>
+              </div>
+              <div className="space-y-3">
+                {qariList.map((q) => (
+                  <button
+                    key={q.id}
+                    onClick={() => {
+                      setSelectedQari(q.id);
+                      setShowQariModal(false);
+                      setIsPlaying(false);
+                    }}
+                    className={`w-full p-4 rounded-3xl text-left font-bold transition-all flex items-center justify-between ${selectedQari === q.id ? "bg-emerald-500 text-white" : "bg-gray-50 dark:bg-white/5 dark:text-slate-300"}`}>
+                    {q.name}
+                    {selectedQari === q.id && <BookmarkCheck size={18} />}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+export default Detail;
