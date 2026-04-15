@@ -2,3 +2,7 @@
 
 /* input.css */
 @custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-amiri: "Amiri Quran";
+}

@@ -195,7 +195,7 @@ const Detail = () => {
                     {ayat.nomorAyat}
                   </div>
                   {lastRead?.nomorAyat === ayat.nomorAyat && (
-                    <span className="bg-emerald-500 px-3 py-1 rounded-full font-black text-[9px] text-white uppercase tracking-tighter">
+                    <span className="max-sm:hidden bg-emerald-500 px-3 py-1 rounded-full font-black text-[9px] text-white uppercase tracking-tighter">
                       Terakhir Dibaca
                     </span>
                   )}
@@ -236,14 +236,14 @@ const Detail = () => {
               </div>
 
               <h2
-                className="mb-8 font-arabic dark:text-white text-5xl md:text-7xl text-right leading-relaxed"
+                className="mb-8 font-amiri dark:text-white max-sm:text-4xl text-5xl md:text-7xl text-right leading-relaxed"
                 dir="rtl">
                 {ayat.teksArab}
               </h2>
-              <p className="mb-3 font-bold text-emerald-500 text-lg italic leading-relaxed">
+              <p className="mb-3 font-bold text-emerald-500 max-sm:text-[16px] text-lg italic leading-relaxed">
                 {ayat.teksLatin}
               </p>
-              <p className="font-medium text-slate-500 dark:text-slate-400 text-xl leading-relaxed">
+              <p className="font-medium text-slate-500 dark:text-slate-400 max-sm:text-lg text-xl leading-relaxed">
                 {ayat.teksIndonesia}
               </p>
             </motion.div>
