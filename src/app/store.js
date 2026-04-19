@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import quranReducer from "../features/quranSlice";
+import sholatReducer from "../features/sholatSlice";
 
 // Store adalah tempat penyimpanan global state
 // Semua komponen bisa mengakses state yang ada di store
@@ -8,5 +9,6 @@ export const store = configureStore({
     // Key 'quran' akan menjadi nama slice yang bisa diakses
     // Nilainya adalah reducer yang sudah kita buat
     quran: quranReducer,
+    sholat: sholatReducer,
   },
 });

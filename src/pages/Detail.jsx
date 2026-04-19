@@ -21,15 +21,18 @@ import {
   getSurahDetail,
   toggleFavoriteAyat,
   setLastRead,
+  getSurahTafsir,
 } from "../features/quranSlice";
 import { SkeletonAyat } from "../components/Skeleton";
+import Tafsir from "./Tafsir";
 
 const Detail = () => {
   const { nomor } = useParams();
+  const ayatRefs = useRef({});
   const dispatch = useDispatch();
-  const { detailSurah, loading, favoriteAyats, lastRead } = useSelector(
-    (state) => state.quran,
-  );
+  const [selectedTafsir, setSelectedTafsir] = useState(null); // Menyimpan objek {ayat, teks}
+  const { detailSurah, loading, favoriteAyats, lastRead, tafsirData } =
+    useSelector((state) => state.quran);
 
   // Audio & UX States
   const [isPlaying, setIsPlaying] = useState(false);
@@ -52,11 +55,23 @@ const Detail = () => {
 
   useEffect(() => {
     dispatch(getSurahDetail(nomor));
+    dispatch(getSurahTafsir(nomor));
     window.scrollTo(0, 0);
     const handleScroll = () => setIsScrolled(window.scrollY > 150);
     window.addEventListener("scroll", handleScroll);
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, [dispatch, nomor]);
+
+  useEffect(() => {
+    // Pastikan currentAyat ada dan elemen ref-nya sudah ter-render
+    if (currentAyat && ayatRefs.current[currentAyat]) {
+      ayatRefs.current[currentAyat].scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [currentAyat]);
 
   // 1. FUNGSI SHARE
   const handleShare = (ayat) => {
@@ -123,22 +138,31 @@ const Detail = () => {
       />
 
       {/* NAVBAR */}
+      {/* NAVBAR */}
       <nav
-        className={`fixed top-0 left-0 right-0 z-200 transition-all duration-500 ${isScrolled ? "bg-white/80 dark:bg-black/80 backdrop-blur-xl py-3 border-b dark:border-white/5" : "py-6"}`}>
+        className={`fixed top-0 right-0 z-100 transition-all duration-500 
+    left-0 lg:left-80 
+    ${
+      isScrolled
+        ? "bg-white/80 dark:bg-black/80 backdrop-blur-xl py-3 border-b dark:border-white/5"
+        : "py-6"
+    }`}>
         <div className="flex justify-between items-center mx-auto px-6 max-w-5xl container">
           <Link
             to="/"
             className="bg-white hover:bg-emerald-500 dark:bg-slate-900 shadow-sm p-3 border dark:border-white/5 rounded-2xl hover:text-white dark:text-white transition-all">
             <ChevronLeft size={24} />
           </Link>
+
           <div className="text-center">
-            <h2 className="font-black dark:text-white">
+            <h2 className="font-black dark:text-white text-lg">
               {detailSurah?.namaLatin}
             </h2>
             <p className="font-bold text-[10px] text-emerald-500 uppercase tracking-widest">
               {detailSurah?.arti}
             </p>
           </div>
+
           <button
             onClick={() => setShowQariModal(true)}
             className="bg-emerald-500/10 hover:bg-emerald-500 p-3 rounded-2xl text-emerald-500 hover:text-white transition-all">
@@ -149,25 +173,45 @@ const Detail = () => {
 
       <div className="mx-auto px-5 pt-28 max-w-4xl container">
         {/* HEADER HERO */}
-        <header className="relative bg-emerald-600 dark:bg-emerald-900 shadow-2xl mb-16 p-12 md:p-20 rounded-[3.5rem] overflow-hidden text-white text-center">
+        <header className="relative bg-linear-to-br from-emerald-600 dark:from-emerald-900 to-emerald-800 dark:to-slate-900 shadow-2xl mb-12 p-10 md:p-16 rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden text-white text-center">
+          {/* Dekorasi Ikon */}
           <BookOpen
-            className="-bottom-10 -left-10 absolute opacity-10 rotate-12"
-            size={250}
+            className="-bottom-12 -left-12 absolute opacity-10 rotate-12 pointer-events-none"
+            size={280}
           />
-          <h1 className="drop-shadow-lg mb-6 font-arabic text-7xl md:text-9xl">
-            {detailSurah?.nama}
-          </h1>
-          <h2 className="font-black text-4xl">{detailSurah?.namaLatin}</h2>
-          <button
-            onClick={() => togglePlay(null)}
-            className="flex items-center gap-2 bg-white/20 hover:bg-white backdrop-blur-md mx-auto mt-8 px-8 py-3 border border-white/30 rounded-full font-bold hover:text-emerald-700 transition-all">
-            {currentAyat === null && isPlaying ? (
-              <Pause size={20} />
-            ) : (
-              <Play size={20} />
-            )}
-            Putar Full Surat
-          </button>
+
+          <div className="z-10 relative">
+            <h1 className="drop-shadow-2xl mb-4 font-arabic text-6xl md:text-8xl">
+              {detailSurah?.nama}
+            </h1>
+            <h2 className="font-black text-3xl md:text-5xl">
+              {detailSurah?.namaLatin}
+            </h2>
+            <p className="mt-2 font-bold text-emerald-100/60 text-sm uppercase tracking-[0.3em]">
+              {detailSurah?.arti} • {detailSurah?.jumlahAyat} AYAT
+            </p>
+
+            {/* Tombol Kontrol */}
+            <div className="flex sm:flex-row flex-col justify-center items-center gap-4 mt-10">
+              <button
+                onClick={() => setShowQariModal(true)}
+                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md px-5 py-2.5 border border-white/20 rounded-2xl font-bold text-[11px] uppercase tracking-wider transition-all">
+                <Settings2 size={16} />
+                Qari: {qariList.find((q) => q.id === selectedQari)?.name}
+              </button>
+
+              <button
+                onClick={() => togglePlay(null)}
+                className="flex items-center gap-3 bg-white shadow-xl px-8 py-3 rounded-full font-bold text-emerald-700 hover:scale-105 active:scale-95 transition-all">
+                {currentAyat === null && isPlaying ? (
+                  <Pause size={20} />
+                ) : (
+                  <Play size={20} />
+                )}
+                <span>Putar Full Surat</span>
+              </button>
+            </div>
+          </div>
         </header>
 
         {/* AYAT LIST */}
@@ -175,6 +219,7 @@ const Detail = () => {
           {detailSurah?.ayat.map((ayat) => (
             <motion.div
               key={ayat.nomorAyat}
+              ref={(el) => (ayatRefs.current[ayat.nomorAyat] = el)}
               onViewportEnter={() =>
                 dispatch(
                   setLastRead({
@@ -232,11 +277,30 @@ const Detail = () => {
                       fill={isFav(ayat.nomorAyat) ? "currentColor" : "none"}
                     />
                   </button>
+                  {/* Tambahkan tombol ini di sebelah tombol Share/Heart */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Cari teks tafsir yang nomor ayatnya sama
+                      const tafsirAyat = tafsirData?.tafsir?.find(
+                        (t) => t.ayat === ayat.nomorAyat,
+                      );
+
+                      setSelectedTafsir({
+                        nomorAyat: ayat.nomorAyat,
+                        teks: tafsirAyat
+                          ? tafsirAyat.teks
+                          : "Tafsir sedang dimuat atau tidak ditemukan.",
+                      });
+                    }}
+                    className="bg-gray-50 dark:bg-slate-800 p-3 rounded-xl text-gray-400 hover:text-emerald-500 transition-all">
+                    <BookOpen size={20} />
+                  </button>
                 </div>
               </div>
 
               <h2
-                className="mb-8 font-amiri dark:text-white max-sm:text-4xl text-5xl md:text-7xl text-right leading-relaxed"
+                className="mb-8 font-amiri dark:text-white max-sm:text-4xl text-5xl text-right leading-relaxed"
                 dir="rtl">
                 {ayat.teksArab}
               </h2>
@@ -356,6 +420,13 @@ const Detail = () => {
           </div>
         )}
       </AnimatePresence>
+      <Tafsir
+        isOpen={!!selectedTafsir}
+        onClose={() => setSelectedTafsir(null)}
+        surahName={detailSurah?.namaLatin}
+        ayatNumber={selectedTafsir?.nomorAyat}
+        teksTafsir={selectedTafsir?.teks}
+      />
     </div>
   );
 };
