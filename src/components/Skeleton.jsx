@@ -496,7 +496,7 @@ const Home = () => {
 
     const params = {
       cari: vectorSearchQuery.trim(),
-      batas: 10,
+      batas: 5,
     };
 
     // vectorFilterTypes sudah diambil dari useSelector di atas
