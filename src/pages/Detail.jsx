@@ -154,7 +154,7 @@ const Detail = () => {
             <ChevronLeft size={24} />
           </Link>
 
-          <div className="text-center">
+          <div className="text-right">
             <h2 className="font-black dark:text-white text-lg">
               {detailSurah?.namaLatin}
             </h2>
@@ -162,12 +162,6 @@ const Detail = () => {
               {detailSurah?.arti}
             </p>
           </div>
-
-          <button
-            onClick={() => setShowQariModal(true)}
-            className="bg-emerald-500/10 hover:bg-emerald-500 p-3 rounded-2xl text-emerald-500 hover:text-white transition-all">
-            <Settings2 size={24} />
-          </button>
         </div>
       </nav>
 
@@ -300,7 +294,7 @@ const Detail = () => {
               </div>
 
               <h2
-                className="mb-8 font-amiri dark:text-white max-sm:text-4xl text-5xl text-right leading-relaxed"
+                className="space-x-1 space-x-reverse mb-8 font-amiri dark:text-white max-sm:text-3xl text-5xl text-right leading-[2] max-sm:leading-[2.5] tracking-wide"
                 dir="rtl">
                 {ayat.teksArab}
               </h2>
