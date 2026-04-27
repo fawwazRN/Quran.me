@@ -6,7 +6,6 @@ import {
   vectorSearch,
   setVectorSearchQuery,
   setVectorActiveTab,
-  resetVectorSearch,
 } from "../features/quranSlice";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -564,7 +563,7 @@ const Home = () => {
                 onClick={switchToAiMode}
                 className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold transition-all ${
                   activeMode === "ai"
-                    ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30"
+                    ? "bg-linear-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30"
                     : "text-slate-400 hover:text-slate-600"
                 }`}>
                 <Sparkles size={16} />
@@ -605,7 +604,7 @@ const Home = () => {
                     type="text"
                     value={vectorSearchQuery}
                     placeholder="Tanya apa saja tentang Al-Quran..."
-                    className="bg-gradient-to-r from-emerald-50 dark:from-slate-900 to-teal-50 dark:to-slate-900 shadow-inner p-5 pr-24 pl-14 border border-emerald-200 dark:border-slate-700 rounded-4xl outline-none ring-2 ring-transparent focus:ring-emerald-500/30 w-full dark:text-white placeholder:text-slate-400 transition-all"
+                    className="bg-linear-to-r from-emerald-50 dark:from-slate-900 to-teal-50 dark:to-slate-900 shadow-inner p-5 pr-24 pl-14 border border-emerald-200 dark:border-slate-700 rounded-4xl outline-none ring-2 ring-transparent focus:ring-emerald-500/30 w-full dark:text-white placeholder:text-slate-400 transition-all"
                     onChange={(e) =>
                       dispatch(setVectorSearchQuery(e.target.value))
                     }

@@ -6,6 +6,9 @@ import Footer from "./pages/Footer";
 import JadwalSholat from "./pages/JadwalSholat";
 import MobileNav from "./MobileNav";
 import SidebarNav from "./SidebarNav";
+import Waris from "./pages/Waris";
+import BelajarTajwid from "./pages/BelajarTajwid";
+import IslamicAI from "./pages/IslamicAI";
 
 function App() {
   return (
@@ -25,6 +28,9 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/surat/:nomor" element={<Detail />} />
                 <Route path="/sholat" element={<JadwalSholat />} />
+                <Route path="/waris" element={<Waris />} />
+                <Route path="/tajwid" element={<BelajarTajwid />} />
+                <Route path="/AI-Islam" element={<IslamicAI />} />
               </Routes>
             </div>
           </main>

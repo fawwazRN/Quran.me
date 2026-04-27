@@ -8,6 +8,7 @@ import {
   LayoutGrid,
   ChevronRight,
   ShieldCheck,
+  Bot, // Tambahkan Bot
 } from "lucide-react";
 
 const NavItem = ({ to, icon: Icon, label, active }) => (
@@ -18,13 +19,12 @@ const NavItem = ({ to, icon: Icon, label, active }) => (
         backgroundColor: "rgba(5, 150, 105, 0.1)",
       }}
       whileTap={{ scale: 0.98 }}
-      className={`flex items-center justify-between px-6 py-4 rounded-[2rem] transition-all duration-300 ${
+      className={`flex items-center justify-between px-6 py-4 rounded-4xl transition-all duration-300 ${
         active
-          ? "bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-[0_10px_30px_rgba(16,185,129,0.4)] font-black border border-emerald-400/30"
+          ? "bg-linear-to-r from-emerald-600 to-emerald-700 text-white shadow-[0_10px_30px_rgba(16,185,129,0.4)] font-black border border-emerald-400/30"
           : "text-slate-600 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-400 font-bold"
       }`}>
       <div className="flex items-center gap-4">
-        {/* Warna Icon disesuaikan agar selalu tajam */}
         <Icon
           size={22}
           strokeWidth={active ? 3 : 2.5}
@@ -49,7 +49,7 @@ const SidebarNav = () => {
   const location = useLocation();
 
   return (
-    <aside className="hidden top-0 left-0 z-[100] fixed lg:flex flex-col bg-white/95 dark:bg-slate-950/95 backdrop-blur-md p-8 border-slate-200/50 dark:border-slate-800/50 border-r w-80 h-screen">
+    <aside className="hidden top-0 left-0 z-100 fixed lg:flex flex-col bg-white/95 dark:bg-slate-950/95 backdrop-blur-md p-8 border-slate-200/50 dark:border-slate-800/50 border-r w-80 h-screen">
       {/* BRANDING SECTION */}
       <div className="flex items-center gap-4 mb-14 px-2">
         <div className="flex justify-center items-center bg-emerald-700 shadow-2xl shadow-emerald-600/40 rounded-[1.2rem] w-12 h-12 text-white">
@@ -92,9 +92,17 @@ const SidebarNav = () => {
           label="Jadwal Sholat"
           active={location.pathname === "/sholat"}
         />
+
+        {/* MENU AI ISLAM - BARU */}
+        <NavItem
+          to="/ai-islam"
+          icon={Bot}
+          label="Islamic AI"
+          active={location.pathname === "/ai-islam"}
+        />
       </div>
 
-      <div className="flex-grow" />
+      <div className="grow" />
 
       {/* PREMIUM INFO CARD */}
       <div className="group relative bg-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.3)] p-8 rounded-[2.8rem] overflow-hidden text-white">
