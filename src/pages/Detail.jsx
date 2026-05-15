@@ -130,7 +130,7 @@ const Detail = () => {
     );
 
   return (
-    <div className="bg-[#F8FAFC] dark:bg-[#050505] pb-44 min-h-screen transition-colors duration-500">
+    <div className="bg-[#F8FAFC] dark:bg-transparent pb-44 min-h-screen transition-colors duration-500">
       {/* PROGRESS BAR */}
       <motion.div
         className="top-0 right-0 left-0 z-210 fixed bg-emerald-500 h-1 origin-left"

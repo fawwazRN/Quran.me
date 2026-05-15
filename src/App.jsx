@@ -9,6 +9,11 @@ import SidebarNav from "./SidebarNav";
 import Waris from "./pages/Waris";
 import BelajarTajwid from "./pages/BelajarTajwid";
 import IslamicAI from "./pages/IslamicAI";
+import Blogs from "./pages/Blogs";
+import BlogDetail from "./pages/BlogDetail";
+import Meet from "./pages/Meet";
+import ImageToCode from "./pages/ImageToCode";
+import UndanganSyariah from "./pages/UndanganSyariah";
 
 function App() {
   return (
@@ -31,6 +36,11 @@ function App() {
                 <Route path="/waris" element={<Waris />} />
                 <Route path="/tajwid" element={<BelajarTajwid />} />
                 <Route path="/AI-Islam" element={<IslamicAI />} />
+                <Route path="/meet" element={<Meet />} />
+                <Route path="/img-to-code" element={<ImageToCode />} />
+                <Route path="/undangan" element={<UndanganSyariah />} />
+                <Route path="/blog" element={<Blogs />} />
+                <Route path="/blog/:slug" element={<BlogDetail />} />
               </Routes>
             </div>
           </main>
